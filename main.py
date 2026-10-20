@@ -1,70 +1,85 @@
 import flet as ft
 
 
-
-
 def main(page: ft.Page):
-    # variaveis simples e compostas e textos
+    # variáveis simples e compostas e textos
     emprestimos = []
     resultado = ft.Text('')
+    total_unidades = ft.Text('Total de unidades emprestadas: 0', size=20)
+    lista_emprestimos = ft.Column(controls=[])
     largura = 350
 
+    # função para calcular o total de unidades
+    def calcular_total():
+        total = 0
 
+        for emprestimo in emprestimos:
+            total += emprestimo["quantidade"]
 
-    # função dos botoes 
+        total_unidades.value = f'Total de unidades emprestadas: {total}'
+
+    # função dos botões
     def limpar(e):
         usuario.value = ''
         qtd.value = ''
         equipamento.value = None
         resultado.value = ''
         page.update()
-   
 
-    
- 
     def solicitar(e):
-        if usuario.value == '':
+        if not usuario.value.strip():
             resultado.value = 'Informe o nome do responsável.'
             page.update()
-            return 
-        if qtd.value == '' or  qtd.value < 0:
-            resultado.value = 'Digite uma quantidade inteira válida.'
+            return
+
+        if not qtd.value.isdigit() or int(qtd.value) <= 0:
+            resultado.value = 'Digite uma quantidade inteira maior que zero.'
             page.update()
             return
+
         if equipamento.value is None:
             resultado.value = 'Selecione um equipamento.'
             page.update()
             return
 
         emprestimo = {
-            "responsavel": resultado.value,
-            "equipamento": qtd.value,
-            "quantidade": equipamento.value
+            "responsavel": usuario.value.strip(),
+            "equipamento": equipamento.value,
+            "quantidade": int(qtd.value)
         }
 
+        emprestimos.append(emprestimo)
 
-        emprestimos.append(emprestimo) 
+        calcular_total()
+        texto_emprestimo = (
+    f"Responsável: {emprestimo['responsavel']}\n"
+    f"Equipamento: {emprestimo['equipamento']}\n"
+    f"Quantidade: {emprestimo['quantidade']}"
+)
 
-    # botoes 
+        lista_emprestimos.controls.append(
+    ft.Text(texto_emprestimo)
+)
+
+        resultado.value = 'Empréstimo registrado com sucesso!'
+        page.update()
+
+    # botões
     botao_limpar = ft.Button(
         content='Limpar',
         on_click=limpar
     )
 
     botao_solicitar = ft.Button(
-        content='solicitar emprestimo',
+        content='Solicitar empréstimo',
         on_click=solicitar
     )
 
-
-    
-    # objetos 
-
+    # objetos
     usuario = ft.TextField(
-        label='Digite seu nome:',
+        label='Digite o nome do responsável:',
         width=largura
     )
-
 
     qtd = ft.TextField(
         label='Digite a quantidade',
@@ -81,15 +96,18 @@ def main(page: ft.Page):
         width=largura
     )
 
-    # organizar elementos e adicionar na pagina 
-   
+    # organizar elementos e adicionar na página
     coluna = ft.Column(
         [
-            usuario,equipamento,qtd,
-ft.Row(
-[botao_solicitar,botao_limpar],
-alignment=ft.MainAxisAlignment.CENTER
-)
+            usuario,
+            equipamento,
+            qtd,
+            ft.Row(
+                [botao_solicitar, botao_limpar],
+                alignment=ft.MainAxisAlignment.CENTER
+            ),
+            resultado,
+            total_unidades,lista_emprestimos
         ],
         spacing=15,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -97,13 +115,7 @@ alignment=ft.MainAxisAlignment.CENTER
         scroll=ft.ScrollMode.AUTO
     )
 
-
     page.add(coluna)
 
 
-
-
 ft.run(main)
-
-
-
